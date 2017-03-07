@@ -961,7 +961,8 @@ int checkCorrectnessAndRebuild() {
 
 
 int main() {
-    freopen("test", "r", stdin);
+    freopen("proof", "r", stdin);
+    freopen("rebuiltProof", "w", stdout);
     
     scanf("%s\n", str);
 
@@ -988,7 +989,7 @@ int main() {
         cout << "Incorrect! First incorrect formula's number is " << res << endl;
         return 0;
     }
-    /*
+    
     for (int i = 0; i + 2 < (int) hypothesis.size(); ++i) {
         cout << hypothesis[i] << ",";
     }
@@ -996,9 +997,12 @@ int main() {
     if (hypothesis.size() > 1) {
         cout << hypothesis[hypothesis.size() - 2];   
     }
-    //cout << "|-";
-    //cout << "(" + hypothesis.back() + ")->(" + needToProve + ")" << "\n";
-    */
+    cout << "|-";
+    if (hypothesis.size() > 0) {
+        cout << "(" + hypothesis.back() + ")->(" + needToProve + ")" << "\n";
+    } else {
+        cout << needToProve << "\n";
+    }
     for (int i = 0; i < (int) rebuilt.size(); ++i) {
         cout << rebuilt[i] << "\n";
     }
