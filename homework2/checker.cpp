@@ -181,7 +181,9 @@ struct quantifier : expression {
 
 string parseVariable(string & expr, int & pos) {
     string name = "";
-    while (pos < (int) expr.size() && (isLowerCaseLetter(expr[pos]) || isDigit(expr[pos]))) {
+    
+    name = expr[pos++];
+    while (pos < (int) expr.size() && isDigit(expr[pos])) {
         name += expr[pos];
         ++pos;
     }
