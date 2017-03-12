@@ -279,7 +279,8 @@ expression * getPredicate(string & expr, int & pos) {
     
     vector < expression * > args;
     if (isUpperCaseLetter(expr[pos])) {
-        while (pos < (int) expr.size() && (isUpperCaseLetter(expr[pos]) || isDigit(expr[pos]))) {
+        name += expr[pos++];
+        while (pos < (int) expr.size() && isDigit(expr[pos])) {
             name += expr[pos];
             ++pos;
         }
