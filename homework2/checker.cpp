@@ -7,6 +7,7 @@ using namespace std;
 const int MAXLEN = 1000000;
 
 char str[MAXLEN];
+
 int parenthesis[MAXLEN];
 
 vector < string > hypothesis, evidence;
@@ -221,6 +222,8 @@ expression * getSimpleTerm(string & expr, int & pos) {
         return getIncrease(expr, pos, ret);        
     }
     
+    if (!isLowerCaseLetter(expr[pos])) return nullptr;
+    
     string name = parseVariable(expr, pos);
     vector < expression * > args;
     if (pos < (int) expr.size() && expr[pos] == '(') {
@@ -238,9 +241,11 @@ expression * getSimpleTerm(string & expr, int & pos) {
 
 expression * getMultiply(string & expr, int & pos) {
     expression * ret = getSimpleTerm(expr, pos);
+    if (ret == nullptr) return nullptr;
     while (pos < (int) expr.size() && expr[pos] == '*') {
         ++pos;
         ret = new multiply(ret, getSimpleTerm(expr, pos));
+        if (ret == nullptr) return nullptr;        
     }
     return ret;
 }
@@ -248,9 +253,12 @@ expression * getMultiply(string & expr, int & pos) {
 
 expression * getSum(string & expr, int & pos) {
     expression * ret = getMultiply(expr, pos);
+    if (ret == nullptr) return nullptr;
     while (pos < (int) expr.size() && expr[pos] == '+') {
         ++pos;
         ret = new sum(ret, getMultiply(expr, pos));
+    
+        if (ret == nullptr) return nullptr;       
     }
     return ret;
 }
@@ -259,7 +267,10 @@ expression * getSum(string & expr, int & pos) {
 bool isTerm(string & expr) {
     int pos = 0;
     getSum(expr, pos);
-    if (pos == (int) expr.size()) return true;
+    if (pos == (int) expr.size()) {
+        cout << expr << endl;
+        return true;   
+    }
     return false;
 }
 
@@ -302,8 +313,8 @@ expression * getPredicate(string & expr, int & pos) {
     }
     name = "=";
     args.push_back(getSum(expr, pos));
-    //cout << "formula: " << formula_number << endl;
-    //assert(expr[pos] == '=');
+    cout << "formula: " << formula_number << " " << expr << " " << pos << endl;
+    assert(expr[pos] == '=');
     ++pos;
     args.push_back(getSum(expr, pos));
     return new predicate(name, args);
