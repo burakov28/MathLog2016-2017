@@ -4,7 +4,7 @@
 using namespace std;
 
 
-const int MAXLEN = 10000;
+const int MAXLEN = 1000000;
 
 char str[MAXLEN];
 int parenthesis[MAXLEN];
@@ -274,6 +274,8 @@ expression * getQuantifier(string & expr, int & pos) {
     return new quantifier(name, getVariable(expr, pos), getUnary(expr, pos));
 }
 
+int formula_number;
+
 expression * getPredicate(string & expr, int & pos) {
     string name = "";
     
@@ -300,7 +302,8 @@ expression * getPredicate(string & expr, int & pos) {
     }
     name = "=";
     args.push_back(getSum(expr, pos));
-    assert(expr[pos] == '=');
+    //cout << "formula: " << formula_number << endl;
+    //assert(expr[pos] == '=');
     ++pos;
     args.push_back(getSum(expr, pos));
     return new predicate(name, args);
@@ -789,6 +792,7 @@ int checkCorrectnessAndRebuild() {
     int last = 0;
     int sz = evidence.size();
     for (int i = 0; i < (int) evidence.size(); ++i) {
+        formula_number = i + 1;
         string expr = evidence[i];
 
         expression * parseExpr = parseExpression(expr);
@@ -811,7 +815,7 @@ int checkCorrectnessAndRebuild() {
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        
         if (isSimpleScheme(parseExpr)) {
             rebuilt.push_back(expr);
             if (hypo != "") {
@@ -849,7 +853,7 @@ int checkCorrectnessAndRebuild() {
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        
         if (isFromAnySchema(parseExpr)) {
             rebuilt.push_back(expr);
             if (hypo != "") {                    
@@ -861,7 +865,7 @@ int checkCorrectnessAndRebuild() {
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        
         if (isToSomeSchema(parseExpr)) {
             rebuilt.push_back(expr);
             if (hypo != "") {                    
@@ -873,7 +877,7 @@ int checkCorrectnessAndRebuild() {
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        
         if (isInductiveSchema(parseExpr)) {
             rebuilt.push_back(expr);
             if (hypo != "") {                    
@@ -885,7 +889,7 @@ int checkCorrectnessAndRebuild() {
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        
         string name;
         if (isGeneralization(parseExpr, name) && (hypo == "" || !containsFreeVar(parseExpression(hypo), name))) {
             if (hypo == "") {
@@ -958,6 +962,7 @@ int checkCorrectnessAndRebuild() {
         }
 
         return i + 1;
+        
     }
     return -1;
 }
