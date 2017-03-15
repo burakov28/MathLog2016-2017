@@ -268,7 +268,7 @@ bool isTerm(string & expr) {
     int pos = 0;
     getSum(expr, pos);
     if (pos == (int) expr.size()) {
-        cout << expr << endl;
+        //cout << expr << endl;
         return true;   
     }
     return false;
@@ -313,7 +313,7 @@ expression * getPredicate(string & expr, int & pos) {
     }
     name = "=";
     args.push_back(getSum(expr, pos));
-    cout << "formula: " << formula_number << " " << expr << " " << pos << endl;
+    //cout << "formula: " << formula_number << " " << expr << " " << pos << endl;
     assert(expr[pos] == '=');
     ++pos;
     args.push_back(getSum(expr, pos));
@@ -511,7 +511,7 @@ bool containsFreeVar(expression * expr, string & varName) {
 }
 
 void getFreeVars(expression * expr, set < string > & freeVars, multiset < string > & blockVars) {
-    if (isVariable(expr) && expr -> args.size() == 0) {
+    if (isVariable(expr)) {
         if (blockVars.find(expr -> name) == blockVars.end()) {
             freeVars.insert(expr -> name);
         }
@@ -532,7 +532,7 @@ void getFreeVars(expression * expr, set < string > & freeVars, multiset < string
 }
 
 bool checkFree(expression * expr, string & varName, vector < string > & vars, multiset < string > & blockVars) {
-    if (expr -> name == varName || expr -> args.size() == 0) {
+    if (expr -> name == varName && expr -> args.size() == 0) {
         for (int i = 0; i < (int) vars.size(); ++i) {
             if (blockVars.find(vars[i]) != blockVars.end()) return false;
         }
@@ -794,33 +794,44 @@ void generateProve(int type, vector < string > & vals) {
 }
 
 
+string toString(int a) {
+    if (a == 0) return "0";
+    string ret = "";
+    while (a > 0) {
+        ret += a % 10 + '0';
+        a /= 10;
+    }
+    reverse(ret.begin(), ret.end());
+    return ret;
+}
 
 int checkCorrectnessAndRebuild() {
     string hypo = "";
     if (hypothesis.size() != 0) {
         hypo = hypothesis.back();
     }
-    int last = 0;
+    
     int sz = evidence.size();
     for (int i = 0; i < (int) evidence.size(); ++i) {
         formula_number = i + 1;
-        string expr = evidence[i];
-
-        expression * parseExpr = parseExpression(expr);
         
+        string expr = evidence[i];
+        expression * parseExpr = parseExpression(expr);        
         expr = parseExpr -> toString();
 
-        if (100 * i / sz > last) {
-            ++last;
-            cerr << last << endl;
-        }
+        cerr << setprecision(4) << (100.0 * (double) i) / ((double) sz) << "%" << endl;
         
         if (isAxiom(expr)) {
             rebuilt.push_back(expr);
-            if (hypo != "") {                
+            if (hypo != "") {                      
                 rebuilt.push_back("(" + expr + ")->(" + hypo + ")->(" + expr + ")");
                 rebuilt.push_back("(" + hypo + ")->(" + expr + ")");
             }
+#ifdef DEBUG
+            string rsss = "Axiom ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "Axiom" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -832,8 +843,14 @@ int checkCorrectnessAndRebuild() {
             if (hypo != "") {
                rebuilt.push_back("(" + expr + ")->(" + hypo + ")->(" + expr + ")");
                rebuilt.push_back("(" + hypo + ")->(" + expr + ")");            
-            }
-            //cout << "Simple Axiom Schema" << "\n";
+            }            
+#ifdef DEBUG
+            string rsss = "Simple Axiom Schema ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
+            
+            //cout << "Simple Axiom Schema" << "\n";            
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
             continue;
@@ -860,6 +877,11 @@ int checkCorrectnessAndRebuild() {
                 }
             }
             //cout << "Hypothesis" << "\n";
+#ifdef DEBUG
+            string rsss = "Hypothesis";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
             continue;
@@ -871,6 +893,11 @@ int checkCorrectnessAndRebuild() {
                 rebuilt.push_back("(" + expr + ")->(" + hypo + ")->(" + expr + ")");
                 rebuilt.push_back("(" + hypo + ")->(" + expr + ")");
             }            
+#ifdef DEBUG
+            string rsss = "From Any Schema ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "From Any Schema" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -883,6 +910,11 @@ int checkCorrectnessAndRebuild() {
                 rebuilt.push_back("(" + expr + ")->(" + hypo + ")->(" + expr + ")");
                 rebuilt.push_back("(" + hypo + ")->(" + expr + ")");
             }
+#ifdef DEBUG
+            string rsss = "To Some Schema ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "To Some Schema" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -895,6 +927,11 @@ int checkCorrectnessAndRebuild() {
                 rebuilt.push_back("(" + expr + ")->(" + hypo + ")->(" + expr + ")");
                 rebuilt.push_back("(" + hypo + ")->(" + expr + ")");
             }
+#ifdef DEBUG
+            string rsss = "Inductive Schema ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "Inductive Schema" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -920,6 +957,11 @@ int checkCorrectnessAndRebuild() {
                 generateProve(2, tmp);
                 rebuilt.push_back("(" + hypo + ")->(" + phi + ")->@" + name + "(" + psi + ")");
             }
+#ifdef DEBUG
+            string rsss = "Generalization ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "Generalization Inference Rule" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -939,12 +981,17 @@ int checkCorrectnessAndRebuild() {
                 vector < string > tmp = { hypo, phi, psi };
                 generateProve(3, tmp);
                 rebuilt.push_back("(" + psi + ")->(" + hypo + ")->(" + phi + ")");
-                rebuilt.push_back("?" + name + "(" + psi + ")->(" + hypo + ")->(" + phi + ")");
+                rebuilt.push_back("(?" + name + "(" + psi + "))->(" + hypo + ")->(" + phi + ")");
                 
-                tmp = { "?" + name + "(" + psi + ")", hypo, phi };
+                tmp = { "?" + name + "(" + psi + ")", phi, hypo };
                 generateProve(3, tmp);
-                rebuilt.push_back("(" + hypo + ")->?" + name + "(" + psi + ")->(" + phi + ")");
+                rebuilt.push_back("(" + hypo + ")->(?" + name + "(" + psi + "))->(" + phi + ")");
             }
+#ifdef DEBUG
+            string rsss = "Reduction Inference ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "Reduction Inference Rule" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
@@ -965,13 +1012,19 @@ int checkCorrectnessAndRebuild() {
                 rebuilt.push_back("((" + hypo + ")->(" + l + ")->(" + r + "))->((" + hypo + ")->(" + r + "))");
                 rebuilt.push_back("(" + hypo + ")->(" + r + ")");
             }
-            
+#ifdef DEBUG
+            string rsss = "Modus Ponens ";
+            rsss += toString(i + 1);
+            rebuilt.push_back(rsss);
+#endif
             //cout << "Modus Ponens" << "\n";
             evidenced.push_back(parseExpr);
             evidencedString.insert(parseExpr -> toString());
             continue;
         }
-
+        cerr << "Incorrect formula number " << i + 1 << ":" << endl;
+        cerr << expr << endl;
+        
         return i + 1;
         
     }
